@@ -186,7 +186,8 @@ def apply_apple_style(win):
     default_font = ('Helvetica Neue', 12)
     style.configure('.', font=default_font, background='white')
     style.configure('TButton', padding=6, background='#e0e0e0')
-    win.option_add('*Font', 'Helvetica Neue 12')
+    # Quote font family so Tk can parse names with spaces like "Helvetica Neue"
+    win.option_add('*Font', '{Helvetica Neue} 12')
     win.configure(bg='white')
 
 
