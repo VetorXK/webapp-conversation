@@ -177,28 +177,26 @@ def make_fullscreen(win):
     win.attributes('-fullscreen', True)
 
 
-def apply_apple_style(win):
-    """Apply a simple Apple inspired style and handle fonts safely on Windows."""
+def apply_material_style(win):
+    """Apply a simple Material Design inspired style and handle fonts safely."""
     style = ttk.Style(win)
     try:
         style.theme_use('clam')
     except Exception:
-        # Some platforms may not provide the clam theme
         pass
 
     import tkinter.font as tkfont
 
-    # Use Helvetica when available, otherwise fall back to TkDefaultFont
+    # Use Roboto when available, otherwise fall back to TkDefaultFont
     try:
-        default_font = tkfont.Font(family='Helvetica', size=12)
+        default_font = tkfont.Font(family='Roboto', size=12)
     except tkfont.TclError:
         default_font = tkfont.nametofont('TkDefaultFont')
         default_font.configure(size=12)
 
     style.configure('.', font=default_font, background='white')
-    style.configure('TButton', padding=6, background='#e0e0e0')
+    style.configure('TButton', padding=6, background='#6200ee', foreground='white')
 
-    # Set default font for widgets, quoting to avoid space parsing issues
     family = default_font.actual('family')
     size = default_font.actual('size')
     win.option_add('*Font', f'{{{family}}} {size}')
@@ -221,7 +219,7 @@ class LoginWindow(Tk):
     def __init__(self):
         super().__init__()
         self.title('Login')
-        apply_apple_style(self)
+        apply_material_style(self)
         make_fullscreen(self)
         self.resizable(False, False)
         self.protocol('WM_DELETE_WINDOW', self.confirm_exit)
@@ -271,7 +269,7 @@ class MainApp(Tk):
         super().__init__()
         self.user = user
         self.title('Sistema Escolar')
-        apply_apple_style(self)
+        apply_material_style(self)
         make_fullscreen(self)
         self.protocol('WM_DELETE_WINDOW', self.on_close)
 
@@ -559,7 +557,7 @@ class DetailWindow(Toplevel):
     def __init__(self, matricula, user):
         super().__init__()
         self.title(f'Detalhes {matricula}')
-        apply_apple_style(self)
+        apply_material_style(self)
         make_fullscreen(self)
         conn = sqlite3.connect(DB_PATH)
         cur = conn.cursor()
@@ -584,7 +582,7 @@ class EditWindow(Toplevel):
     def __init__(self, matricula, user):
         super().__init__()
         self.title('Editar Cadastro')
-        apply_apple_style(self)
+        apply_material_style(self)
         make_fullscreen(self)
         self.matricula = matricula
         self.user = user
@@ -783,7 +781,7 @@ class RecoveryWindow(Toplevel):
     def __init__(self):
         super().__init__()
         self.title('Recuperar Senha')
-        apply_apple_style(self)
+        apply_material_style(self)
         make_fullscreen(self)
         Label(self, text='Usuário').pack()
         self.user_var = StringVar()
