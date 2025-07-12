@@ -126,40 +126,41 @@ def cep_lookup(cep, street_var, bairro_var, cidade_var):
         messagebox.showerror('Erro', f'Falha ao consultar CEP: {e}')
 
 
-def mask_date(var):
-    v = ''.join(filter(str.isdigit, var.get()))[:8]
-    if len(v) > 4:
-        v = f"{v[:2]}/{v[2:4]}/{v[4:]}"
-    elif len(v) > 2:
-        v = f"{v[:2]}/{v[2:]}"
-    var.set(v)
+def apply_mask(entry, pattern):
+    digits = ''.join(filter(str.isdigit, entry.get()))
+    result = ''
+    di = 0
+    for ch in pattern:
+        if ch == '#':
+            if di < len(digits):
+                result += digits[di]
+                di += 1
+            else:
+                break
+        else:
+            if di < len(digits):
+                result += ch
+            else:
+                break
+    entry.delete(0, END)
+    entry.insert(0, result)
+    entry.icursor(len(result))
 
 
-def mask_cpf(var):
-    v = ''.join(filter(str.isdigit, var.get()))[:11]
-    if len(v) > 9:
-        v = f"{v[:3]}.{v[3:6]}.{v[6:9]}-{v[9:]}"
-    elif len(v) > 6:
-        v = f"{v[:3]}.{v[3:6]}.{v[6:]}"
-    elif len(v) > 3:
-        v = f"{v[:3]}.{v[3:]}"
-    var.set(v)
+def mask_date(entry):
+    apply_mask(entry, '##/##/####')
 
 
-def mask_phone(var):
-    v = ''.join(filter(str.isdigit, var.get()))[:11]
-    if len(v) > 6:
-        v = f"({v[:2]}) {v[2:7]}-{v[7:]}"
-    elif len(v) > 2:
-        v = f"({v[:2]}) {v[2:]}"
-    var.set(v)
+def mask_cpf(entry):
+    apply_mask(entry, '###.###.###-##')
 
 
-def mask_cep(var):
-    v = ''.join(filter(str.isdigit, var.get()))[:8]
-    if len(v) > 5:
-        v = f"{v[:5]}-{v[5:]}"
-    var.set(v)
+def mask_phone(entry):
+    apply_mask(entry, '(##) #####-####')
+
+
+def mask_cep(entry):
+    apply_mask(entry, '#####-###')
 
 
 def center_window(win, w=DEFAULT_W, h=DEFAULT_H):
@@ -310,8 +311,9 @@ class CadastroTab(Frame):
 
         Label(self, text='Data de nascimento (dd/mm/aaaa)').grid(row=row, column=0, sticky=W)
         self.nasc_var = StringVar()
-        Entry(self, textvariable=self.nasc_var).grid(row=row, column=1)
-        self.nasc_var.trace('w', lambda *a: (mask_date(self.nasc_var), self.update_age()))
+        self.nasc_entry = Entry(self, textvariable=self.nasc_var)
+        self.nasc_entry.grid(row=row, column=1)
+        self.nasc_entry.bind('<KeyRelease>', lambda e: (mask_date(self.nasc_entry), self.update_age()))
         row += 1
 
         Label(self, text='Idade').grid(row=row, column=0, sticky=W)
@@ -321,26 +323,30 @@ class CadastroTab(Frame):
 
         Label(self, text='CPF').grid(row=row, column=0, sticky=W)
         self.cpf_var = StringVar()
-        Entry(self, textvariable=self.cpf_var).grid(row=row, column=1)
-        self.cpf_var.trace('w', lambda *a: mask_cpf(self.cpf_var))
+        self.cpf_entry = Entry(self, textvariable=self.cpf_var)
+        self.cpf_entry.grid(row=row, column=1)
+        self.cpf_entry.bind('<KeyRelease>', lambda e: mask_cpf(self.cpf_entry))
         row += 1
 
         Label(self, text='Telefone principal').grid(row=row, column=0, sticky=W)
         self.tel_var = StringVar()
-        Entry(self, textvariable=self.tel_var).grid(row=row, column=1)
-        self.tel_var.trace('w', lambda *a: mask_phone(self.tel_var))
+        self.tel_entry = Entry(self, textvariable=self.tel_var)
+        self.tel_entry.grid(row=row, column=1)
+        self.tel_entry.bind('<KeyRelease>', lambda e: mask_phone(self.tel_entry))
         row += 1
 
         Label(self, text='Telefone recado').grid(row=row, column=0, sticky=W)
         self.tel2_var = StringVar()
-        Entry(self, textvariable=self.tel2_var).grid(row=row, column=1)
-        self.tel2_var.trace('w', lambda *a: mask_phone(self.tel2_var))
+        self.tel2_entry = Entry(self, textvariable=self.tel2_var)
+        self.tel2_entry.grid(row=row, column=1)
+        self.tel2_entry.bind('<KeyRelease>', lambda e: mask_phone(self.tel2_entry))
         row += 1
 
         Label(self, text='CEP').grid(row=row, column=0, sticky=W)
         self.cep_var = StringVar()
-        Entry(self, textvariable=self.cep_var).grid(row=row, column=1)
-        self.cep_var.trace('w', lambda *a: mask_cep(self.cep_var))
+        self.cep_entry = Entry(self, textvariable=self.cep_var)
+        self.cep_entry.grid(row=row, column=1)
+        self.cep_entry.bind('<KeyRelease>', lambda e: mask_cep(self.cep_entry))
         Button(self, text='Buscar', command=lambda: cep_lookup(self.cep_var.get(), self.log_var, self.bairro_var, self.cidade_var)).grid(row=row, column=2)
         row += 1
 
@@ -547,15 +553,16 @@ class EditWindow(Toplevel):
         for i, (col, val) in enumerate(zip(CADASTRO_COLUMNS[1:], data[1:])):
             Label(self, text=col.replace('_', ' ').title()+':').grid(row=i, column=0, sticky=W)
             var = StringVar(value='' if val is None else str(val))
-            Entry(self, textvariable=var).grid(row=i, column=1)
+            ent = Entry(self, textvariable=var)
+            ent.grid(row=i, column=1)
             if col == 'data_nascimento':
-                var.trace('w', lambda *a, v=var: mask_date(v))
+                ent.bind('<KeyRelease>', lambda e, w=ent: mask_date(w))
             elif col in ('cpf',):
-                var.trace('w', lambda *a, v=var: mask_cpf(v))
+                ent.bind('<KeyRelease>', lambda e, w=ent: mask_cpf(w))
             elif col in ('tel_principal', 'tel_recado'):
-                var.trace('w', lambda *a, v=var: mask_phone(v))
+                ent.bind('<KeyRelease>', lambda e, w=ent: mask_phone(w))
             elif col == 'cep':
-                var.trace('w', lambda *a, v=var: mask_cep(v))
+                ent.bind('<KeyRelease>', lambda e, w=ent: mask_cep(w))
             self.vars[col] = var
         Button(self, text='Salvar', command=self.save).grid(row=len(self.vars)+1, column=1, pady=10)
 
@@ -591,7 +598,7 @@ class CrudTab(Frame):
             row += 1
         Button(self, text='Adicionar', command=self.add).grid(row=row, column=0, pady=10)
         Button(self, text='Atualizar Lista', command=self.refresh).grid(row=row, column=1)
-        self.tree = ttk.Treeview(self, columns=[f[0] for f in self.fields])
+        self.tree = ttk.Treeview(self, columns=[f[0] for f in self.fields], show='headings')
         for f in self.fields:
             self.tree.heading(f[0], text=f[1])
         self.tree.grid(row=row+1, column=0, columnspan=2, sticky='nsew')
@@ -605,7 +612,8 @@ class CrudTab(Frame):
         cur = conn.cursor()
         cols = ','.join(self.entries.keys())
         vals = [v.get() for v in self.entries.values()]
-        cur.execute(f'INSERT INTO {self.table}({cols}) VALUES ({"?"*len(vals)})', vals)
+        placeholders = ','.join(['?'] * len(vals))
+        cur.execute(f'INSERT INTO {self.table}({cols}) VALUES ({placeholders})', vals)
         conn.commit()
         record_id = cur.lastrowid
         conn.close()
@@ -658,9 +666,6 @@ class FinanceiroTab(Frame):
             self.anexo_var.set(f)
 
     def save(self):
-        if not is_master(self.user):
-            messagebox.showerror('Erro', 'Acesso negado')
-            return
         conn = sqlite3.connect(DB_PATH)
         cur = conn.cursor()
         cur.execute('''INSERT INTO financeiro(matricula, valor, vencimento, forma_pagamento, anexo)
