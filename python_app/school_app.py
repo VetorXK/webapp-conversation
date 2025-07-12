@@ -172,6 +172,24 @@ def center_window(win, w=DEFAULT_W, h=DEFAULT_H):
     win.geometry(f"{w}x{h}+{x}+{y}")
 
 
+def make_fullscreen(win):
+    win.update_idletasks()
+    win.attributes('-fullscreen', True)
+
+
+def apply_apple_style(win):
+    style = ttk.Style(win)
+    try:
+        style.theme_use('clam')
+    except Exception:
+        pass
+    default_font = ('Helvetica Neue', 12)
+    style.configure('.', font=default_font, background='white')
+    style.configure('TButton', padding=6, background='#e0e0e0')
+    win.option_add('*Font', 'Helvetica Neue 12')
+    win.configure(bg='white')
+
+
 def log_action(user, action, table_name, record_id):
     conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
@@ -188,7 +206,8 @@ class LoginWindow(Tk):
     def __init__(self):
         super().__init__()
         self.title('Login')
-        center_window(self)
+        apply_apple_style(self)
+        make_fullscreen(self)
         self.resizable(False, False)
         self.protocol('WM_DELETE_WINDOW', self.confirm_exit)
 
@@ -237,7 +256,8 @@ class MainApp(Tk):
         super().__init__()
         self.user = user
         self.title('Sistema Escolar')
-        center_window(self, 800, 600)
+        apply_apple_style(self)
+        make_fullscreen(self)
         self.protocol('WM_DELETE_WINDOW', self.on_close)
 
         Label(self, text=f'Usuário logado: {self.user}').pack(anchor='e')
@@ -524,7 +544,8 @@ class DetailWindow(Toplevel):
     def __init__(self, matricula, user):
         super().__init__()
         self.title(f'Detalhes {matricula}')
-        center_window(self)
+        apply_apple_style(self)
+        make_fullscreen(self)
         conn = sqlite3.connect(DB_PATH)
         cur = conn.cursor()
         cur.execute('SELECT * FROM cadastro WHERE matricula=?', (matricula,))
@@ -548,7 +569,8 @@ class EditWindow(Toplevel):
     def __init__(self, matricula, user):
         super().__init__()
         self.title('Editar Cadastro')
-        center_window(self)
+        apply_apple_style(self)
+        make_fullscreen(self)
         self.matricula = matricula
         self.user = user
         conn = sqlite3.connect(DB_PATH)
@@ -746,7 +768,8 @@ class RecoveryWindow(Toplevel):
     def __init__(self):
         super().__init__()
         self.title('Recuperar Senha')
-        center_window(self)
+        apply_apple_style(self)
+        make_fullscreen(self)
         Label(self, text='Usuário').pack()
         self.user_var = StringVar()
         Entry(self, textvariable=self.user_var).pack()
