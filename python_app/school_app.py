@@ -201,7 +201,9 @@ class LoginWindow(Tk):
 
         Label(self, text='Senha').pack()
         self.pass_var = StringVar()
-        Entry(self, textvariable=self.pass_var, show='*').pack()
+        self.pass_entry = Entry(self, textvariable=self.pass_var, show='*')
+        self.pass_entry.pack()
+        self.pass_entry.bind('<Return>', lambda e: self.login())
 
         Button(self, text='Entrar', command=self.login).pack(pady=5)
         Button(self, text='Esqueci a senha', command=self.recover).pack()
@@ -239,6 +241,7 @@ class MainApp(Tk):
         self.protocol('WM_DELETE_WINDOW', self.on_close)
 
         Label(self, text=f'Usuário logado: {self.user}').pack(anchor='e')
+        Button(self, text='Bloquear', command=self.lock, width=10).pack(anchor='e')
 
         nb = ttk.Notebook(self)
         nb.pack(fill='both', expand=True)
@@ -272,6 +275,10 @@ class MainApp(Tk):
 
         self.logs_tab = LogsTab(nb)
         nb.add(self.logs_tab, text='Logs')
+
+    def lock(self):
+        self.destroy()
+        LoginWindow().mainloop()
 
     def on_close(self):
         if messagebox.askyesno('Sair', 'Deseja realmente sair?'):
