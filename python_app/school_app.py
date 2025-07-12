@@ -178,16 +178,30 @@ def make_fullscreen(win):
 
 
 def apply_apple_style(win):
+    """Apply a simple Apple inspired style and handle fonts safely on Windows."""
     style = ttk.Style(win)
     try:
         style.theme_use('clam')
     except Exception:
+        # Some platforms may not provide the clam theme
         pass
-    default_font = ('Helvetica', 12)
+
+    import tkinter.font as tkfont
+
+    # Use Helvetica when available, otherwise fall back to TkDefaultFont
+    try:
+        default_font = tkfont.Font(family='Helvetica', size=12)
+    except tkfont.TclError:
+        default_font = tkfont.nametofont('TkDefaultFont')
+        default_font.configure(size=12)
+
     style.configure('.', font=default_font, background='white')
     style.configure('TButton', padding=6, background='#e0e0e0')
-    # Quote font family so Tk can parse names with spaces like "Helvetica"
-    win.option_add('*Font', '{Helvetica} 12')
+
+    # Set default font for widgets, quoting to avoid space parsing issues
+    family = default_font.actual('family')
+    size = default_font.actual('size')
+    win.option_add('*Font', f'{{{family}}} {size}')
     win.configure(bg='white')
 
 
