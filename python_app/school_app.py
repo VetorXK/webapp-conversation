@@ -183,11 +183,11 @@ def apply_apple_style(win):
         style.theme_use('clam')
     except Exception:
         pass
-    default_font = ('Helvetica Neue', 12)
+    default_font = ('Helvetica', 12)
     style.configure('.', font=default_font, background='white')
     style.configure('TButton', padding=6, background='#e0e0e0')
-    # Quote font family so Tk can parse names with spaces like "Helvetica Neue"
-    win.option_add('*Font', '{Helvetica Neue} 12')
+    # Quote font family so Tk can parse names with spaces like "Helvetica"
+    win.option_add('*Font', '{Helvetica} 12')
     win.configure(bg='white')
 
 
